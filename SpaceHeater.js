@@ -3,7 +3,7 @@ const { Client } = require('tplink-smarthome-api');
 const config     = require('config');
 
 class SpaceHeater {
-	constructor(args) {
+  constructor(args) {
     this.particle             = new Particle();
     this.client               = new Client();
     this.token                = config.get('Particle.token');
