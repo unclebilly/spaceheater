@@ -1,0 +1,20 @@
+{
+	"Plug": {
+		"plugAddress": "192.168.0.5"
+	},
+	"Particle": {
+		"token": 				"",
+    	"deviceId":             "",
+    	// this should match the variable name in the 
+    	// particle arduino code
+    	"particleVariableName": "analogValue"
+	},
+	"desiredTemp":       67,
+	
+	// ms between temperature checks
+	"sampleFrequencyMs": 30000,
+
+	// degrees the temperature can fall below the desiredTemp
+	// before the plug turns on
+	"temperatureVariance": 2
+}
