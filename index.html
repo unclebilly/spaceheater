@@ -1,0 +1,164 @@
+<html>
+<head>
+  <title>Space Heater Dashboard</title>
+  <meta charset="UTF-8">
+  <script src="node_modules/chart.js/dist/Chart.bundle.js"></script>
+  <script src="node_modules/chartjs-plugin-colorschemes/dist/chartjs-plugin-colorschemes.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="node_modules/chart.js/dist/Chart.bundle.css"></head>
+  <style type="text/css">
+    body {
+        background-color: #121212;
+        color: #aaa;
+        margin: 0 auto;
+        text-align: center;
+    }
+    .wrap {
+        margin: 0 auto;
+        width: 90%;
+    }
+    #status {
+        width: 100px;
+        margin: 0 auto;
+    }
+    #statusIcon {
+        width: 10px;
+        height: 10px;
+        border: 1px solid #eee;
+        float: left;
+    }
+    .connected #statusIcon {
+        background-color: green;
+    }
+    .disconnected #statusIcon {
+        background-color: red;
+    }
+    #currentTemp {
+        font-size: 10em;
+        font-family: sans-serif;
+        color: #aaa;
+    }
+    </style>
+</head>
+<body>
+    <div class='wrap'>
+        <canvas id="myChart"></canvas>
+        <div id="status">
+            <div id="statusIcon"></div>
+            <pre id="statusText"></pre>
+        </div>
+        <div id="currentTemp"></div>
+    </div>
+</body>
+<script>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets:[{
+                fill: 'origin',
+                label: "Current temp (F)",
+                data: []
+            },{
+                fill: false,
+                borderDash: [3,3],
+                label: "Max temp (F)",
+                data: [],
+                type: 'line',
+            },{
+                fill: false,
+                borderDash: [3,3],
+                label: "Min temp (F)",
+                data: [],
+                type: 'line',
+            }]
+        },
+        options: {
+            plugins: {
+                colorschemes: {
+                    scheme: 'brewer.Accent5'
+                }
+            },
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+            scales: {
+                xAxes: [
+                    {
+                        type: 'time',
+                        distribution: 'linear',
+                        time: {
+                            unit: 'minute'
+                        }
+                    }
+                ]
+            }
+        }
+    });
+
+    function updateStatus(str) {
+        var parentStatusElement = document.getElementById("status");
+        var statusText = document.getElementById("statusText");
+        statusText.innerHTML = str;
+        if(str == "disconnected" || str == "connected") {
+            parentStatusElement.className = str;
+        } else {
+            parentStatusElement.className = "";
+        }
+        console.log(str);
+    }
+
+    function updateTempDisplay(newTemp) {
+        document.getElementById("currentTemp").innerHTML = newTemp + "° F";
+    }
+
+    function updateChart(object) {
+        var time = new Date();
+        console.log("Rolling: " + object.rollingAvgTempF + " Actual: " + object.tempF);
+        chart.data.datasets[0].data.push({
+            x: time,
+            y: parseFloat(object.rollingAvgTempF)
+        });
+        chart.data.datasets[1].data.push({
+            x: time,
+            y: parseFloat(object.desiredTemp)
+        });
+        chart.data.datasets[2].data.push({
+            x: time,
+            y: parseFloat(object.lowTemp)
+        });
+        chart.update();
+    };
+
+    function connectToServer() {
+        var ws = new WebSocket('ws://localhost:9898/');
+        var interval;
+        updateStatus("connecting...");
+        ws.onopen = function() {
+            updateStatus("connected");
+            ws.send("HELO");
+        };
+
+        ws.onclose = function() {
+            updateStatus("disconnected");
+            clearInterval(interval);
+            setTimeout(connectToServer, 1000);
+        };
+
+        ws.onmessage = function(e) {
+            var object = JSON.parse(e.data);
+            updateTempDisplay(object.tempF);
+            updateChart(object);
+        };
+        
+
+        interval = setInterval(function() {
+            ws.send("HELO");
+        }, 15000);
+    }
+
+    connectToServer();
+</script>
+</html>

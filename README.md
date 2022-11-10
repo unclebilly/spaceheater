@@ -1,7 +1,7 @@
 About
 ===
-This project is a massively wasteful thermostat that ties together a Particle wifi device and a TP Link Wifi plug.
-The code assumes you have a temperature sensor on the Particle and a space heater attached to the plug.  
+This project is a massively wasteful thermostat that ties together a Particle WiFi device and a TP Link Wifi plug.
+The code assumes you have a temperature sensor (TMP36) on an analog GPIO connected to the Particle device and any sort of space heater attached to the plug.  
 
 Installation
 ===

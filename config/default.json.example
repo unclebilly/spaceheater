@@ -16,5 +16,8 @@
 
 	// degrees the temperature can fall below the desiredTemp
 	// before the plug turns on
-	"temperatureVariance": 2
+	"temperatureVariance": 2,
+
+	// Port that the web socket server listens to
+	"websocketPort": 9898,
 }
